@@ -10,6 +10,38 @@ AUE4_Puzzle_ZoomPanPawn::AUE4_Puzzle_ZoomPanPawn(const FObjectInitializer& Objec
 	: Super(ObjectInitializer)
 {
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
+
+	// Don't rotate character to camera direction
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+
+	// Disable Jump and Crouch actions
+	//bAddDefaultMovementBindings = false;
+
+	// Create a camera boom...
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->bAbsoluteRotation = false; // Rotate arm relative to character
+	CameraBoom->TargetArmLength = 800.f;
+	CameraBoom->RelativeRotation = FRotator(-60.f, 0.f, 0.f);
+	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
+
+										  // Move camera boom with character only on yaw rotation
+	CameraBoom->bUsePawnControlRotation = false;
+	CameraBoom->bInheritPitch = false;
+	CameraBoom->bInheritRoll = false;
+	CameraBoom->bInheritYaw = true;
+
+	// Enables camera lag - matter of taste
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+
+	// Create a camera...
+	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
+	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
 }
 
 void AUE4_Puzzle_ZoomPanPawn::Tick(float DeltaSeconds)
@@ -95,4 +127,24 @@ void AUE4_Puzzle_ZoomPanPawn::TraceForBlock(const FVector& Start, const FVector&
 		CurrentBlockFocus->Highlight(false);
 		CurrentBlockFocus = nullptr;
 	}
+}
+
+void AUE4_Puzzle_ZoomPanPawn::ChangeCameraArmLength(float changeValue)
+{
+	CameraBoom->TargetArmLength += changeValue * 100.0f; // Change 100.0f with zoom speed property
+}
+
+void AUE4_Puzzle_ZoomPanPawn::RotateCameraArm(FRotator rotation)
+{
+	CameraBoom->AddRelativeRotation(rotation);
+}
+
+void AUE4_Puzzle_ZoomPanPawn::MoveCharacterForward(float changeValue)
+{
+	AddMovementInput(GetActorForwardVector(), changeValue);
+}
+
+void AUE4_Puzzle_ZoomPanPawn::MoveCharacterRight(float changeValue)
+{
+	AddMovementInput(GetActorRightVector(), changeValue);
 }

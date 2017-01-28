@@ -11,6 +11,28 @@ class AUE4_Puzzle_ZoomPanPlayerController : public APlayerController
 
 public:
 	AUE4_Puzzle_ZoomPanPlayerController();
+
+	// Input handlers
+	void OnMoveForwardAxis(float axisValue);
+	void OnMoveRightAxis(float axisValue);
+	void OnMouseHorizontal(float axisValue);
+	void OnMouseVertical(float axisValue);
+	void OnZoomInAction();
+	void OnZoomOutAction();
+	void OnLookAroundStart();
+	void OnLookAroundStop();
+
+protected:
+
+	// Begin PlayerController interface
+	virtual void PlayerTick(float DeltaTime) override;
+	virtual void SetupInputComponent() override;
+	// End PlayerController interface
+
+private:
+	bool lookAroundEnabled = false;
+	int32 mouseLockPositionX;
+	int32 mouseLockPositionY;
 };
 
 
